@@ -8,7 +8,7 @@
 ## Set configuration & compile
 `cp /boot/config-$(uname -r) .config` <br>
 `make olddefconfig` # Make new config based on the old one, set new config values to default. <br>
-`make -j$(nproc) bindeb-pkg` # This will take a while <br>
+`make -j$(nproc) KCFLAGS='-march=native -O3 -pipe' bindeb-pkg` # This will take a while <br>
 
 ## Install newly compiled kernel & copy .config
 `export KERNEL_RELEASE=$(make kernelrelease)` <br>
@@ -24,8 +24,8 @@ sudo sbsign --key /var/lib/shim-signed/mok/MOK-Kernel.priv --cert /var/lib/shim-
 
 ## Sign the kernel modules
 ```bash
-find /lib/modules/$(make kernelrelease) -type f -name '*.ko' | while read -r mod; do
+find /lib/modules/$KERNEL_RELEASE -type f -name '*.ko' | while read -r mod; do
     echo Signing $mod
-    sudo /usr/src/linux-headers-$(make kernelrelease)/scripts/sign-file sha256 /var/lib/shim-signed/mok/MOK.priv /var/lib/shim-signed/mok/MOK.der "$mod"
+    sudo /usr/src/linux-headers-$(make kernelrelease)/scripts/sign-file sha256 /var/lib/shim-signed/mok/MOK-Kernel.priv /var/lib/shim-signed/mok/MOK-Kernel.der "$mod"
 done
 ```
